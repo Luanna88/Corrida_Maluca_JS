@@ -1,4 +1,5 @@
 # TCC - Corrida Maluca
+https://www.deusnogibi.com.br/site/wp-content/uploads/2016/07/KPADSTKCORRIDAMALUCA.jpg
 
 Como pudemos ver no decorrer dos vídeos e exercícios o Javascript consegue ser uma linguagem bem doida também, e para fechar o módulo com chave de ouro nada melhor do que desenvolvermos um aplicação da Corrida Maluca.
 
