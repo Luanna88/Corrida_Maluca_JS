@@ -1,0 +1,14 @@
+Deve conseguir obter a pista corretamente
+Deve conseguir obter o corredor corretamente
+Deve conseguir calcular a vantagem de tipo pista corretamente
+Deve conseguir calcular o debuff de pista corretamente
+Deve conseguir calcular o buff de posição de pista para 3 corredores
+Deve conseguir calcular a próxima posição corretamente se estiver sob o buff de um aliado
+Deve conseguir calcular a próxima posição corretamente se estiver sob o debuff de um inimigo
+Deve conseguir completar uma corrida com um vencedor
+Deve conseguir criar corredor corretamente somente com aliado
+Deve conseguir criar corredor corretamente somente com inimigo
+Deve conseguir criar corredor corretamente com aliado e inimigo
+Deve conseguir calcular as novas posições corretamente de uma rodada para a próxima
+Deve impedir que corredor se mova negativamente mesmo se o calculo de velocidade seja negativo
+Deve impedir que o Dick Vigarista vença a corrida se estiver a uma rodada de ganhar
