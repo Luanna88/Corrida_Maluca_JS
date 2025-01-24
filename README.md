@@ -1,5 +1,7 @@
 # TCC - Corrida Maluca
-![KPADSTKCORRIDAMALUCA](https://github.com/user-attachments/assets/cb83383b-7d04-4296-9903-c6a4b802ae08)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/cb83383b-7d04-4296-9903-c6a4b802ae08" alt="Corrida Maluca">
+</p>
 
 
 Como pudemos ver no decorrer dos vídeos e exercícios o Javascript consegue ser uma linguagem bem doida também, e para fechar o módulo com chave de ouro nada melhor do que desenvolvermos um aplicação da Corrida Maluca.
