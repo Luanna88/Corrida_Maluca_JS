@@ -1,180 +1,450 @@
-const { pistas, corredores, calcularPosicao, iniciarCorrida } = require('../src/corrida-maluca');
+import axios from 'axios'
+import { corrida, calculoBuffsEDebuffs, calcularAliadoEInimigo, resetAliadoEInimigo, prevencaoAtributos, bloquearDickVigarista, setarAliadoEInimigo } from '../src/corrida-metodo'
 
-describe('Corrida Maluca', () => {
+let listaPistas
+let listaPistasData
+let listaPersonagens
+let listaPersonagensData
+
+beforeEach(async () => {
+  listaPistas = await axios.get('https://gustavobuttenbender.github.io/gus.github/corrida-maluca/pistas.json')
+  listaPistasData = listaPistas.data
+  listaPersonagens = await axios.get('https://gustavobuttenbender.github.io/gus.github/corrida-maluca/personagens.json')
+  listaPersonagensData = listaPersonagens.data
+
+})
+
+describe('Testes obrigatorios', () => {
   it('Deve conseguir obter a pista corretamente', () => {
-    const pista = pistas[0];
-    
-    expect(pista.nome).toBe('Himalaia');
+    let pistaSelecionada = listaPistasData[0]
+
+    const resposta = pistaSelecionada
+    const resultadoEsperado = {
+      id: 1,
+      nome: 'Himalaia',
+      tipo: 'MONTANHA',
+      descricao: 'Uma montanha nevada, os corredores devem dar uma volta inteira nela, como existe muita neve eles terão dificuldade em enxergar',
+      tamanho: 30,
+      debuff: -2,
+      posicoesBuffs: [ 6, 17 ]
+    }
+    expect(resposta).toEqual(resultadoEsperado)
+
   });
 
   it('Deve conseguir obter o corredor corretamente', () => {
-    const corredor = corredores[0];
+    let personagensSelecionados = [listaPersonagensData[0], listaPersonagensData[1]]
 
-    expect(corredor.nome).toBe('Dick Vigarista');
-  });
-
-  it('Deve conseguir calcular o buff de posição de pista para 3 corredores', () => {
-    const corredor = corredores[0];
-    const pista = pistas[0];
-
-    corredores[0].posicao = 6;
-
-    const posicaoBuff = calcularPosicao(corredor, pista, 1);
-
-    expect(posicaoBuff).toBe(7);  
-  });
-
-  it('Deve conseguir calcular a próxima posição corretamente se estiver sob o buff de um aliado', () => {
-    const corredor = corredores[0];
-    const aliado = corredores.find(c => c.nome === corredor.aliado);
-
-    aliado.posicao = 4;  
-
-    const pista = pistas[0];
-    const posicaoComBuffAliado = calcularPosicao(corredor, pista, 1);
-
-    expect(posicaoComBuffAliado).toBe(7); 
-  });
-
-  it('Deve conseguir calcular a próxima posição corretamente se estiver sob o debuff de um inimigo', () => {
-    const pista = pistas[0];
-    const corredor = corredores[0]; 
-    const inimigo = corredores[2]; 
-
-    corredor.posicao = 0;
-    inimigo.posicao = 1;
-
-    const rodada = 1;
-    const novaPosicao = calcularPosicao(corredor, pista, rodada);
-
-    expect(novaPosicao).toBe(4);
-  });
-
-  it('Deve conseguir completar uma corrida com um vencedor', () => {
-    const vencedor = iniciarCorrida(pistas[0], corredores);
-
-    expect(vencedor).toBeTruthy();
-  });
-
-  it('Deve impedir que corredor se mova negativamente mesmo se o calculo de velocidade seja negativo', () => {
-    const corredor = corredores[0];
-    const pista = pistas[0];
-
-    corredor.velocidade = -1; 
-
-    const posicao = calcularPosicao(corredor, pista, 1);
-
-    expect(posicao).toBeGreaterThanOrEqual(0);
-  });
-
-  it('Deve impedir que o Dick Vigarista vença a corrida se estiver a uma rodada de ganhar', () => {
-    const dickVigarista = corredores.find(c => c.nome === 'Dick Vigarista');
-
-    dickVigarista.posicao = 29; 
-
-    const vencedor = iniciarCorrida(pistas[0], corredores);
-
-    expect(vencedor.nome).not.toBe('Dick Vigarista'); 
-  });
-
-  it('Deve conseguir criar corredor corretamente somente com aliado', () => {
-    const corredor = corredores[0]; 
-    const aliado = corredores.find((c) => c.nome === corredor.aliado);
-
-    corredor.posicao = 5;
-    aliado.posicao = 6; 
-
-    const pista = pistas[0];
-    const novaPosicao = calcularPosicao(corredor, pista, 1);
-
-    expect(novaPosicao).toBe(corredor.posicao + corredor.velocidade + 1);
+    const resposta = personagensSelecionados
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 4,
+        vantagem: 'CIRCUITO'
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 3,
+        vantagem: 'MONTANHA'
+      }
+    ]
+    expect(resposta).toEqual(resultadoEsperado)
   });
 
   it('Deve conseguir calcular a vantagem de tipo pista corretamente', () => {
-    const pista = pistas[0];
-    const corredor = {
-      id: 11,
-      nome: 'Correrdor Teste',
-      velocidade: 3,
-      drift: 2,
-      aceleracao: 4,
-      vantagem: 'MONTANHA', 
-      aliado: null,
-      inimigo: null,
-      posicao: 0,
-    };
-    const rodada = 1;
-    const posicao = calcularPosicao(corredor, pista, rodada);
+    let pistaSelecionada = listaPistasData[0]
+    let personagensSelecionados = [listaPersonagensData[0], listaPersonagensData[1]]
 
-    expect(posicao).toBe(5);
+    const resposta = calculoBuffsEDebuffs(pistaSelecionada, personagensSelecionados)
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 3,
+        drift: 0,
+        aceleracao: 2,
+        vantagem: 'CIRCUITO',
+        posicao: 0,
+        checkpoint: 0
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 3,
+        vantagem: 'MONTANHA',
+        posicao: 0,
+        checkpoint: 0
+      }
+    ]
+
+    expect(resposta).toEqual(resultadoEsperado)
   });
 
   it('Deve conseguir calcular o debuff de pista corretamente', () => {
-    const pista = pistas[0]; 
-    const corredor = corredores[0]; 
-    corredor.posicao = 0;
-    corredor.velocidade = 5;
-  
-    const novaPosicao = calcularPosicao(corredor, pista, 1);
+    let pistaSelecionada = listaPistasData[0]
+    let personagensSelecionados = [listaPersonagensData[0], listaPersonagensData[1]]
 
-    expect(novaPosicao).toBe(5);
+    const resposta = calculoBuffsEDebuffs(pistaSelecionada, personagensSelecionados)
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 3,
+        drift: 0,
+        aceleracao: 2,
+        vantagem: 'CIRCUITO',
+        posicao: 0,
+        checkpoint: 0
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 3,
+        vantagem: 'MONTANHA',
+        posicao: 0,
+        checkpoint: 0
+      }
+    ]
+
+    expect(resposta).toEqual(resultadoEsperado)
   });
 
-  it('Deve conseguir criar corredor corretamente somente com inimigo', () => {
-    const novoCorredor = {
-      id: 15,
-      nome: 'Zeca Maluco',
-      velocidade: 6,
-      drift: 4,
-      aceleracao: 3,
-      vantagem: 'MONTANHA',
-      aliado: null,
-      inimigo: 'Dick Vigarista',
-      posicao: 0,
-    };
+  it('Deve conseguir calcular o buff de posição de pista para 3 corredores', () => {
+    let pistaSelecionada = listaPistasData[0]
+    let personagem1 = listaPersonagensData[0]
+    let personagem2 = listaPersonagensData[1]   
+    let personagem3 = listaPersonagensData[2] 
 
-    expect(novoCorredor.nome).toBe('Zeca Maluco');
-    expect(novoCorredor.inimigo).toBe('Dick Vigarista');
-    expect(novoCorredor.aliado).toBeNull();
+    let personagensSelecionados = [personagem1, personagem2, personagem3]
+
+    const resposta = corrida(pistaSelecionada, personagensSelecionados)
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 4,
+        vantagem: 'CIRCUITO',
+        posicao: 27,
+        checkpoint: 2
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 3,
+        vantagem: 'MONTANHA',
+        posicao: 30,
+        checkpoint: 2,
+        status: 'Ganhador'
+      },
+      {
+        id: 3,
+        nome: 'Irmãos Pavor',
+        velocidade: 6,
+        drift: 4,
+        aceleracao: 5,
+        vantagem: 'DESERTO',
+        posicao: 28,
+        checkpoint: 2
+      }
+    ]
+
+    expect(resposta).toEqual(resultadoEsperado)
+  });
+
+  it('Deve conseguir calcular a próxima posição corretamente se estiver sob o buff de um aliado', () => {
+    let pistaSelecionada = listaPistasData[0]
+    let personagem1 = listaPersonagensData[0]
+    let personagem2 = listaPersonagensData[1]
+
+    setarAliadoEInimigo(personagem1, 'Irmãos Rocha', 'teste')
+    
+    let personagensSelecionados = [personagem1, personagem2]
+
+    const resposta = corrida(pistaSelecionada, personagensSelecionados)
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 4,
+        drift: 1,
+        aceleracao: 3,
+        vantagem: 'CIRCUITO',
+        aliado: 'Irmãos Rocha',
+        inimigo: 'teste',
+        posicao: 20,
+        checkpoint: 2,
+        buffAliado: 'Desativado'
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 6,
+        drift: 3,
+        aceleracao: 4,
+        vantagem: 'MONTANHA',
+        posicao: 30,
+        checkpoint: 2,
+        status: 'Ganhador'
+      }
+    ]
+    expect(resposta).toEqual(resultadoEsperado)
+  });
+
+  it('Deve conseguir calcular a próxima posição corretamente se estiver sob o debuff de um inimigo', () => {
+    let pistaSelecionada = listaPistasData[0]
+    let personagem1 = listaPersonagensData[0]
+    let personagem2 = listaPersonagensData[1]
+
+    setarAliadoEInimigo(personagem1, 'teste', 'Irmãos Rocha')
+
+    let personagensSelecionados = [personagem1, personagem2]
+
+    const resposta = corrida(pistaSelecionada, personagensSelecionados)
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 4,
+        vantagem: 'CIRCUITO',
+        aliado: 'teste',
+        inimigo: 'Irmãos Rocha',
+        posicao: 25,
+        checkpoint: 2,
+        debuffInimigo: 'Desativado'
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 3,
+        vantagem: 'MONTANHA',
+        posicao: 30,
+        checkpoint: 2,
+        status: 'Ganhador'
+      }
+    ]
+
+    expect(resposta).toEqual(resultadoEsperado)
+  });
+
+  it('Deve conseguir completar uma corrida com um vencedor', () => {
+    let pistaSelecionada = listaPistasData[0]
+    let personagem1 = listaPersonagensData[0]
+    let personagem2 = listaPersonagensData[1]
+    
+    let personagensSelecionados = [personagem1, personagem2]
+
+    const resposta = corrida(pistaSelecionada, personagensSelecionados)
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 4,
+        vantagem: 'CIRCUITO',
+        posicao: 27,
+        checkpoint: 2
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 3,
+        vantagem: 'MONTANHA',
+        posicao: 30,
+        checkpoint: 2,
+        status: 'Ganhador'
+      }
+    ]
+
+    expect(resposta).toEqual(resultadoEsperado)
+  });
+
+  it('Deve conseguir criar corredor corretamente somente com aliado', () => {
+    let personagem1 = listaPersonagensData[0]
+
+    setarAliadoEInimigo(personagem1, 'Irmãos Rocha', 'Não Possui')
+
+    const resposta = personagem1
+    const resultadoEsperado = {
+      id: 1,
+      nome: 'Dick Vigarista',
+      velocidade: 5,
+      drift: 2,
+      aceleracao: 4,
+      vantagem: 'CIRCUITO',
+      aliado: 'Irmãos Rocha',
+      inimigo: 'Não Possui'
+    }
+
+    expect(resposta).toEqual(resultadoEsperado)
+  });
+  
+  it('Deve conseguir criar corredor corretamente somente com inimigo', () => {
+    let personagem1 = listaPersonagensData[0]
+    
+    setarAliadoEInimigo(personagem1, 'Não Possui', 'Irmãos Rocha')
+
+    const resposta = personagem1
+    const resultadoEsperado = {
+      id: 1,
+      nome: 'Dick Vigarista',
+      velocidade: 5,
+      drift: 2,
+      aceleracao: 4,
+      vantagem: 'CIRCUITO',
+      aliado: 'Não Possui',
+      inimigo: 'Irmãos Rocha'
+    }
+    expect(resposta).toEqual(resultadoEsperado)
   });
 
   it('Deve conseguir criar corredor corretamente com aliado e inimigo', () => {
-    const novoCorredor = {
-      id: 15,
-      nome: 'Professor Aéreo',
-      velocidade: 6,
-      drift: 3,
+    let personagem1 = listaPersonagensData[0]
+    
+    setarAliadoEInimigo(personagem1, 'Irmãos Pavor', 'Irmãos Rocha')
+
+    const resposta = personagem1
+    const resultadoEsperado = {
+      id: 1,
+      nome: 'Dick Vigarista',
+      velocidade: 5,
+      drift: 2,
       aceleracao: 4,
-      vantagem: 'AR',
-      aliado: 'Sargento Bombarda',
-      inimigo: 'Penélope Charmosa',
-      posicao: 0,
-    };
-  
-    expect(novoCorredor.nome).toBe('Professor Aéreo');
-    expect(novoCorredor.aliado).toBe('Sargento Bombarda');
-    expect(novoCorredor.inimigo).toBe('Penélope Charmosa');
-    expect(novoCorredor.posicao).toBe(0);
-    expect(novoCorredor.velocidade).toBe(6);
-    expect(novoCorredor.drift).toBe(3);
-    expect(novoCorredor.aceleracao).toBe(4);
-    expect(novoCorredor.vantagem).toBe('AR');
+      vantagem: 'CIRCUITO',
+      aliado: 'Irmãos Pavor',
+      inimigo: 'Irmãos Rocha'
+    }
+
+    expect(resposta).toEqual(resultadoEsperado)
   });
 
   it('Deve conseguir calcular as novas posições corretamente de uma rodada para a próxima', () => {
-    const pista = pistas[0];
+    let pistaSelecionada = listaPistasData[0]
+    let personagem1 = listaPersonagensData[0]
+    let personagem2 = listaPersonagensData[1]
+    
 
-    const rodada1 = calcularPosicao(corredores[0], pista, 1);
-    expect(rodada1).toBeGreaterThanOrEqual(0);
+    let personagensSelecionados = [personagem1, personagem2]
 
-    const rodada2 = calcularPosicao(corredores[1], pista, 2);
-    expect(rodada2).toBeGreaterThan(rodada1);
+    const resposta = corrida(pistaSelecionada, personagensSelecionados)
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 4,
+        vantagem: 'CIRCUITO',
+        posicao: 27,
+        checkpoint: 2
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 3,
+        vantagem: 'MONTANHA',
+        posicao: 30,
+        checkpoint: 2,
+        status: 'Ganhador'
+      }
+    ]
 
-    const rodada3 = calcularPosicao(corredores[2], pista, 3);
-    expect(rodada3).toBeGreaterThan(rodada2);
-
-    const rodada4 = calcularPosicao(corredores[0], pista, 4);
-    expect(rodada4).toBeGreaterThanOrEqual(0);
+    expect(resposta).toEqual(resultadoEsperado)
   });
 
-});
+  it('Deve impedir que corredor se mova negativamente mesmo se o calculo de velocidade seja negativo', () => {
+    let pistaSelecionada = listaPistasData[0]
+    let personagem1 = listaPersonagensData[0]
+    let personagem2 = listaPersonagensData[1]
+    let personagensSelecionados = [personagem1, personagem2]
+
+    personagem1.velocidade = -15
+
+    const resposta = corrida(pistaSelecionada, personagensSelecionados)
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 2,
+        drift: 2,
+        aceleracao: 4,
+        vantagem: 'CIRCUITO',
+        posicao: 18,
+        checkpoint: 2
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 5,
+        drift: 2,
+        aceleracao: 3,
+        vantagem: 'MONTANHA',
+        posicao: 30,
+        checkpoint: 2,
+        status: 'Ganhador'
+      }
+    ]
+
+    expect(resposta).toEqual(resultadoEsperado)
+
+  });
+
+  it('Deve impedir que o Dick Vigarista vença a corrida se estiver a uma rodada de ganhar', () => {
+    let pistaSelecionada = listaPistasData[0]
+    let personagem1 = listaPersonagensData[0]
+    let personagem2 = listaPersonagensData[1]
+    
+    let personagensSelecionados = [personagem1, personagem2]
+
+    personagem2.velocidade = -15
+
+    const resposta = corrida(pistaSelecionada, personagensSelecionados)
+
+    const resultadoEsperado = [
+      {
+        id: 1,
+        nome: 'Dick Vigarista',
+        velocidade: 0,
+        drift: 0,
+        aceleracao: 0,
+        vantagem: 'CIRCUITO',
+        posicao: 29,
+        checkpoint: 2
+      },
+      {
+        id: 2,
+        nome: 'Irmãos Rocha',
+        velocidade: 1,
+        drift: 3,
+        aceleracao: 4,
+        vantagem: 'MONTANHA',
+        posicao: 30,
+        checkpoint: 2,
+        status: 'Ganhador'
+      }
+    ]
+    expect(resposta).toEqual(resultadoEsperado)
+  });
+})
